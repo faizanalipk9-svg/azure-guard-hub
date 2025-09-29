@@ -1,61 +1,28 @@
-import { Shield, Play, Pause, Settings, Plus } from "lucide-react";
+import { Zap, Play, Pause, Settings, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
 
 const DetectionRules = () => {
-  const rules = [
-    {
-      name: "PowerShell Encoded Commands",
-      description: "Detects base64 encoded PowerShell execution",
-      category: "Execution",
-      severity: "High",
-      enabled: true,
-      triggers: 15,
-      lastTriggered: "2 min ago"
+  const { data: rules = [], isLoading, error } = useQuery({
+    queryKey: ['detection-rules'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('detection_rules')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
     },
-    {
-      name: "Suspicious Registry Access",
-      description: "Monitors critical registry key modifications",
-      category: "Persistence",
-      severity: "Medium",
-      enabled: true,
-      triggers: 3,
-      lastTriggered: "1 hour ago"
-    },
-    {
-      name: "Multiple Login Failures",
-      description: "Tracks failed authentication attempts",
-      category: "Credential Access",
-      severity: "Critical",
-      enabled: false,
-      triggers: 0,
-      lastTriggered: "Never"
-    },
-    {
-      name: "Data Exfiltration Pattern",
-      description: "Identifies unusual outbound data transfers",
-      category: "Exfiltration", 
-      severity: "High",
-      enabled: true,
-      triggers: 7,
-      lastTriggered: "30 min ago"
-    }
-  ];
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
-      case "critical": return "threat-critical";
-      case "high": return "threat-high"; 
-      case "medium": return "threat-medium";
-      case "low": return "threat-low";
-      default: return "muted";
-    }
-  };
+  });
 
   const getSeverityVariant = (severity: string) => {
-    switch (severity.toLowerCase()) {
+    switch (severity) {
       case "critical": return "destructive";
       case "high": return "secondary";
       case "medium": return "outline";
@@ -64,37 +31,66 @@ const DetectionRules = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <Card className="cyber-glow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-warning" />
+            Detection Rules
+          </CardTitle>
+          <CardDescription>Loading detection rules...</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="cyber-glow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-warning" />
+            Detection Rules
+          </CardTitle>
+          <CardDescription>Error loading detection rules</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card className="cyber-glow">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-success" />
-            Detection Rules
-          </div>
-          <Button variant="outline" size="sm">
-            <Plus className="h-3 w-3 mr-1" />
-            Add Rule
-          </Button>
+        <CardTitle className="flex items-center gap-2">
+          <Zap className="h-5 w-5 text-warning" />
+          Detection Rules
         </CardTitle>
         <CardDescription>
-          Active security detection and response rules
+          Security detection and response automation
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {rules.map((rule, index) => (
+        {rules.map((rule) => (
           <div
-            key={rule.name}
+            key={rule.id}
             className="flex items-center gap-3 p-3 rounded-lg border bg-card/30 hover:bg-card/50 transition-colors"
           >
-            <Switch 
-              checked={rule.enabled}
-              className="data-[state=checked]:bg-success"
-            />
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={rule.enabled}
+                className="scale-75"
+              />
+              {rule.enabled ? (
+                <Play className="h-3 w-3 text-success" />
+              ) : (
+                <Pause className="h-3 w-3 text-muted-foreground" />
+              )}
+            </div>
             
             <div className="flex-1 space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">{rule.name}</h4>
+                <h4 className="font-medium text-sm">{rule.rule_name}</h4>
                 <Badge variant={getSeverityVariant(rule.severity)} className="text-xs">
                   {rule.severity}
                 </Badge>
@@ -104,30 +100,27 @@ const DetectionRules = () => {
                 {rule.description}
               </p>
               
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  <Badge variant="outline" className="text-xs">
-                    {rule.category}
-                  </Badge>
-                  <span>{rule.triggers} triggers</span>
-                  <span>Last: {rule.lastTriggered}</span>
-                </div>
-                
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  {rule.trigger_count} triggers • Last: {
+                    rule.last_triggered 
+                      ? formatDistanceToNow(new Date(rule.last_triggered), { addSuffix: true })
+                      : 'Never'
+                  }
+                </span>
                 <Button variant="ghost" size="sm" className="h-6 text-xs">
-                  <Settings className="h-3 w-3" />
+                  <Settings className="h-3 w-3 mr-1" />
+                  Edit
                 </Button>
               </div>
             </div>
           </div>
         ))}
         
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="text-xs text-muted-foreground">
-            156 total rules • 142 active
-          </div>
-          <Button variant="outline" size="sm">
-            Manage Rules
-          </Button>
+        <div className="flex justify-center pt-2">
+          <Badge variant="outline" className="text-xs">
+            {rules.length} detection rules configured
+          </Badge>
         </div>
       </CardContent>
     </Card>

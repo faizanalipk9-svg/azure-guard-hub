@@ -14,7 +14,231 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      detection_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enabled: boolean | null
+          id: string
+          last_triggered: string | null
+          rule_content: string
+          rule_name: string
+          rule_type: string
+          severity: Database["public"]["Enums"]["alert_severity"]
+          trigger_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_triggered?: string | null
+          rule_content: string
+          rule_name: string
+          rule_type: string
+          severity: Database["public"]["Enums"]["alert_severity"]
+          trigger_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_triggered?: string | null
+          rule_content?: string
+          rule_name?: string
+          rule_type?: string
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          trigger_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      monitored_devices: {
+        Row: {
+          compliance_score: number | null
+          created_at: string
+          device_name: string
+          device_type: string
+          id: string
+          ip_address: unknown | null
+          last_seen: string
+          mac_address: string | null
+          metadata: Json | null
+          os_info: string
+          status: Database["public"]["Enums"]["device_status"]
+          threats_count: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          compliance_score?: number | null
+          created_at?: string
+          device_name: string
+          device_type: string
+          id?: string
+          ip_address?: unknown | null
+          last_seen?: string
+          mac_address?: string | null
+          metadata?: Json | null
+          os_info: string
+          status?: Database["public"]["Enums"]["device_status"]
+          threats_count?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          compliance_score?: number | null
+          created_at?: string
+          device_name?: string
+          device_type?: string
+          id?: string
+          ip_address?: unknown | null
+          last_seen?: string
+          mac_address?: string | null
+          metadata?: Json | null
+          os_info?: string
+          status?: Database["public"]["Enums"]["device_status"]
+          threats_count?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_alerts: {
+        Row: {
+          alert_id: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          source: string
+          source_ip: unknown | null
+          status: Database["public"]["Enums"]["alert_status"]
+          target_device: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          alert_id: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          source: string
+          source_ip?: unknown | null
+          status?: Database["public"]["Enums"]["alert_status"]
+          target_device?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          alert_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          source?: string
+          source_ip?: unknown | null
+          status?: Database["public"]["Enums"]["alert_status"]
+          target_device?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      threat_intelligence: {
+        Row: {
+          active: boolean | null
+          confidence_score: number | null
+          description: string | null
+          first_seen: string
+          id: string
+          indicator: string
+          indicator_type: string
+          last_seen: string
+          metadata: Json | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          source: string
+          threat_type: Database["public"]["Enums"]["threat_type"]
+        }
+        Insert: {
+          active?: boolean | null
+          confidence_score?: number | null
+          description?: string | null
+          first_seen?: string
+          id?: string
+          indicator: string
+          indicator_type: string
+          last_seen?: string
+          metadata?: Json | null
+          severity: Database["public"]["Enums"]["alert_severity"]
+          source: string
+          threat_type: Database["public"]["Enums"]["threat_type"]
+        }
+        Update: {
+          active?: boolean | null
+          confidence_score?: number | null
+          description?: string | null
+          first_seen?: string
+          id?: string
+          indicator?: string
+          indicator_type?: string
+          last_seen?: string
+          metadata?: Json | null
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          source?: string
+          threat_type?: Database["public"]["Enums"]["threat_type"]
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          full_name: string | null
+          id: string
+          last_login: string | null
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          last_login?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          full_name?: string | null
+          id?: string
+          last_login?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +247,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      alert_severity: "low" | "medium" | "high" | "critical"
+      alert_status: "active" | "investigating" | "resolved" | "false_positive"
+      device_status: "protected" | "alert" | "warning" | "offline"
+      threat_type:
+        | "malware"
+        | "phishing"
+        | "suspicious_ip"
+        | "data_exfiltration"
+        | "privilege_escalation"
+        | "lateral_movement"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +383,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alert_severity: ["low", "medium", "high", "critical"],
+      alert_status: ["active", "investigating", "resolved", "false_positive"],
+      device_status: ["protected", "alert", "warning", "offline"],
+      threat_type: [
+        "malware",
+        "phishing",
+        "suspicious_ip",
+        "data_exfiltration",
+        "privilege_escalation",
+        "lateral_movement",
+      ],
+    },
   },
 } as const

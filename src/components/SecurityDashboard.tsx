@@ -1,16 +1,55 @@
-import { Shield, AlertTriangle, Activity, Users, Server, Eye, Zap } from "lucide-react";
+import { Shield, AlertTriangle, Activity, Users, Server, Eye, Zap, LogOut } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AlertsWidget } from "./widgets/AlertsWidget";
 import { DeviceMonitor } from "./widgets/DeviceMonitor";
 import { ThreatIntelligence } from "./widgets/ThreatIntelligence";
 import { DetectionRules } from "./widgets/DetectionRules";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const SecurityDashboard = () => {
+  const { user, signOut } = useAuth();
+
+  // Fetch metrics data
+  const { data: alertsCount = 0 } = useQuery({
+    queryKey: ['alerts-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('security_alerts')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+      return count || 0;
+    },
+  });
+
+  const { data: devicesCount = 0 } = useQuery({
+    queryKey: ['devices-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('monitored_devices')
+        .select('*', { count: 'exact', head: true });
+      return count || 0;
+    },
+  });
+
+  const { data: rulesCount = 0 } = useQuery({
+    queryKey: ['rules-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('detection_rules')
+        .select('*', { count: 'exact', head: true })
+        .eq('enabled', true);
+      return count || 0;
+    },
+  });
+
   const metrics = [
     {
       title: "Active Threats",
-      value: "3",
+      value: alertsCount.toString(),
       change: "+2 from yesterday",
       Icon: AlertTriangle,
       color: "threat-critical",
@@ -18,7 +57,7 @@ const SecurityDashboard = () => {
     },
     {
       title: "Monitored Devices",
-      value: "847",
+      value: devicesCount.toString(),
       change: "12 new this week",
       Icon: Server,
       color: "info",
@@ -26,7 +65,7 @@ const SecurityDashboard = () => {
     },
     {
       title: "Detection Rules",
-      value: "156",
+      value: rulesCount.toString(),
       change: "8 updated today",
       Icon: Shield,
       color: "success",
@@ -64,6 +103,10 @@ const SecurityDashboard = () => {
             <Zap className="h-3 w-3 mr-1" />
             Active Scanning
           </Badge>
+          <Button variant="outline" size="sm" onClick={signOut}>
+            <LogOut className="h-3 w-3 mr-1" />
+            Sign Out
+          </Button>
         </div>
       </div>
 
