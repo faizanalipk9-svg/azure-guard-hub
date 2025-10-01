@@ -85,23 +85,28 @@ const Rules = () => {
               New Rule
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Detection Rule</DialogTitle>
               <DialogDescription>Define a new automated detection rule</DialogDescription>
             </DialogHeader>
+            <button data-dialog-close className="hidden" onClick={(e) => {
+              e.currentTarget.closest('[role="dialog"]')?.querySelector<HTMLButtonElement>('[aria-label="Close"]')?.click();
+            }} />
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              createRuleMutation.mutate({
-                rule_name: formData.get('rule_name'),
-                rule_type: formData.get('rule_type'),
-                description: formData.get('description'),
-                severity: formData.get('severity'),
-                rule_content: formData.get('rule_content'),
+              const data = {
+                rule_name: formData.get('rule_name') as string,
+                rule_type: formData.get('rule_type') as string,
+                description: formData.get('description') as string,
+                severity: formData.get('severity') as string,
+                rule_content: formData.get('rule_content') as string,
                 enabled: true,
-              });
+              };
+              createRuleMutation.mutate(data);
               (e.target as HTMLFormElement).reset();
+              document.querySelector<HTMLButtonElement>('[data-dialog-close]')?.click();
             }} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="rule_name">Rule Name</Label>
@@ -109,18 +114,18 @@ const Rules = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rule_type">Rule Type</Label>
-                <Select name="rule_type" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="network">Network</SelectItem>
-                    <SelectItem value="file">File System</SelectItem>
-                    <SelectItem value="process">Process</SelectItem>
-                    <SelectItem value="registry">Registry</SelectItem>
-                    <SelectItem value="user">User Behavior</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select 
+                  name="rule_type" 
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Select type</option>
+                  <option value="network">Network</option>
+                  <option value="file">File System</option>
+                  <option value="process">Process</option>
+                  <option value="registry">Registry</option>
+                  <option value="user">User Behavior</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
@@ -128,17 +133,17 @@ const Rules = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="severity">Severity</Label>
-                <Select name="severity" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                  </SelectContent>
-                </Select>
+                <select 
+                  name="severity" 
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Select severity</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rule_content">Rule Content (YAML/JSON)</Label>

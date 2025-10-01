@@ -36,15 +36,18 @@ const Index = () => {
       {/* Header */}
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex-1"></div>
             <div className="flex items-center gap-3">
-              <Shield className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold">CyberGuard Command Center</h1>
-                <p className="text-sm text-muted-foreground">Real-time security monitoring</p>
+              <Shield className="h-8 w-8 text-primary animate-pulse" />
+              <div className="text-center">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                  CyberGuard Command Center
+                </h1>
+                <p className="text-sm text-muted-foreground">Real-time security monitoring & threat detection</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center justify-end gap-2">
               <Badge variant="outline" className="cyber-glow">
                 <Eye className="h-3 w-3 mr-1" />
                 Real-time Monitoring

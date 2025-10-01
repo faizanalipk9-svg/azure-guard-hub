@@ -6,63 +6,63 @@
 
 @layer base {
   :root {
-    /* Dark cybersecurity theme */
-    --background: 210 24% 6%;
-    --foreground: 213 31% 91%;
+    /* Dark cybersecurity theme - Purple/Cyan */
+    --background: 260 30% 8%;
+    --foreground: 180 100% 95%;
 
-    --card: 214 32% 8%;
-    --card-foreground: 213 31% 91%;
+    --card: 260 25% 12%;
+    --card-foreground: 180 100% 95%;
 
-    --popover: 214 32% 8%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 260 25% 12%;
+    --popover-foreground: 180 100% 95%;
 
-    /* Cyber blue primary */
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 24% 6%;
+    /* Cyber cyan primary */
+    --primary: 180 100% 50%;
+    --primary-foreground: 260 30% 8%;
 
-    --secondary: 215 25% 15%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 270 50% 25%;
+    --secondary-foreground: 180 100% 95%;
 
-    --muted: 215 25% 12%;
-    --muted-foreground: 217 10% 64%;
+    --muted: 260 20% 18%;
+    --muted-foreground: 180 20% 65%;
 
-    --accent: 215 25% 15%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 280 70% 45%;
+    --accent-foreground: 180 100% 95%;
 
     /* Alert colors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 350 90% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --warning: 43 96% 56%;
-    --warning-foreground: 210 24% 6%;
+    --warning: 45 100% 60%;
+    --warning-foreground: 260 30% 8%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
+    --success: 150 80% 45%;
+    --success-foreground: 0 0% 100%;
 
-    --info: 217 91% 60%;
-    --info-foreground: 210 24% 6%;
+    --info: 200 100% 50%;
+    --info-foreground: 260 30% 8%;
 
-    --border: 215 25% 15%;
-    --input: 215 25% 12%;
-    --ring: 217 91% 60%;
+    --border: 270 30% 20%;
+    --input: 260 25% 15%;
+    --ring: 180 100% 50%;
 
-    --radius: 0.375rem;
+    --radius: 0.5rem;
 
     /* Cybersecurity specific tokens */
-    --cyber-glow: 217 91% 60%;
-    --threat-critical: 0 84% 60%;
-    --threat-high: 14 91% 60%;
-    --threat-medium: 43 96% 56%;
-    --threat-low: 142 76% 36%;
+    --cyber-glow: 180 100% 50%;
+    --threat-critical: 350 90% 60%;
+    --threat-high: 20 100% 60%;
+    --threat-medium: 45 100% 60%;
+    --threat-low: 150 80% 45%;
     
     /* Gradients */
-    --gradient-cyber: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(217 91% 60% / 0.05));
-    --gradient-alert: linear-gradient(135deg, hsl(0 84% 60% / 0.1), hsl(0 84% 60% / 0.05));
+    --gradient-cyber: linear-gradient(135deg, hsl(180 100% 50% / 0.15), hsl(280 70% 45% / 0.1));
+    --gradient-alert: linear-gradient(135deg, hsl(350 90% 60% / 0.15), hsl(20 100% 60% / 0.1));
     
     /* Shadows */
-    --shadow-cyber: 0 0 20px hsl(217 91% 60% / 0.3);
-    --shadow-threat: 0 0 20px hsl(0 84% 60% / 0.3);
-    --shadow-elevated: 0 8px 32px hsl(210 24% 6% / 0.4);
+    --shadow-cyber: 0 0 25px hsl(180 100% 50% / 0.4);
+    --shadow-threat: 0 0 25px hsl(350 90% 60% / 0.4);
+    --shadow-elevated: 0 10px 40px hsl(260 30% 8% / 0.6);
 
     --sidebar-background: 0 0% 98%;
 
@@ -134,11 +134,24 @@
   .cyber-glow {
     box-shadow: var(--shadow-cyber);
     border: 1px solid hsl(var(--cyber-glow) / 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .cyber-glow:hover {
+    box-shadow: 0 0 35px hsl(180 100% 50% / 0.6);
+    border-color: hsl(var(--cyber-glow) / 0.5);
+    transform: translateY(-2px);
   }
   
   .threat-glow {
     box-shadow: var(--shadow-threat);
     border: 1px solid hsl(var(--threat-critical) / 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  .threat-glow:hover {
+    box-shadow: 0 0 35px hsl(350 90% 60% / 0.6);
+    border-color: hsl(var(--threat-critical) / 0.5);
   }
   
   .scan-animation {
@@ -148,5 +161,14 @@
   @keyframes scan {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(180 100% 50% / 0.4);
+    }
+    50% { 
+      box-shadow: 0 0 35px hsl(180 100% 50% / 0.8);
+    }
   }
 }
