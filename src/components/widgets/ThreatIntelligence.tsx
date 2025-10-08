@@ -1,13 +1,14 @@
-import { Globe, Shield, Database, TrendingUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Globe, Database, TrendingUp } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { memo, useEffect, useCallback } from "react";
 
-const ThreatIntelligence = () => {
-  const { data: threats = [], isLoading, error } = useQuery({
+const ThreatIntelligence = memo(() => {
+  const { data: threats = [], isLoading, error, refetch } = useQuery({
     queryKey: ['threat-intelligence'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -22,7 +23,29 @@ const ThreatIntelligence = () => {
     },
   });
 
-  const getSeverityVariant = (severity: string) => {
+  // Real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('threats-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'threat_intelligence'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
+  const getSeverityVariant = useCallback((severity: string) => {
     switch (severity) {
       case "critical": return "destructive";
       case "high": return "secondary";
@@ -30,7 +53,7 @@ const ThreatIntelligence = () => {
       case "low": return "outline";
       default: return "outline";
     }
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -84,7 +107,7 @@ const ThreatIntelligence = () => {
             <div className="flex-1 space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-sm">{threat.indicator}</h4>
-                <Badge variant={getSeverityVariant(threat.severity)} className="text-xs">
+                <Badge variant={getSeverityVariant(threat.severity) as any} className="text-xs">
                   {threat.severity}
                 </Badge>
               </div>
@@ -120,6 +143,8 @@ const ThreatIntelligence = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+ThreatIntelligence.displayName = "ThreatIntelligence";
 
 export { ThreatIntelligence };

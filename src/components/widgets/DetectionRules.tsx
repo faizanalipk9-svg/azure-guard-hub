@@ -1,14 +1,15 @@
-import { Zap, Play, Pause, Settings, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Zap, Play, Pause, Settings } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { memo, useEffect, useCallback } from "react";
 
-const DetectionRules = () => {
-  const { data: rules = [], isLoading, error } = useQuery({
+const DetectionRules = memo(() => {
+  const { data: rules = [], isLoading, error, refetch } = useQuery({
     queryKey: ['detection-rules'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,7 +22,29 @@ const DetectionRules = () => {
     },
   });
 
-  const getSeverityVariant = (severity: string) => {
+  // Real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('rules-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'detection_rules'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
+  const getSeverityVariant = useCallback((severity: string) => {
     switch (severity) {
       case "critical": return "destructive";
       case "high": return "secondary";
@@ -29,7 +52,7 @@ const DetectionRules = () => {
       case "low": return "outline";
       default: return "outline";
     }
-  };
+  }, []);
 
   if (isLoading) {
     return (
@@ -91,7 +114,7 @@ const DetectionRules = () => {
             <div className="flex-1 space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-sm">{rule.rule_name}</h4>
-                <Badge variant={getSeverityVariant(rule.severity)} className="text-xs">
+                <Badge variant={getSeverityVariant(rule.severity) as any} className="text-xs">
                   {rule.severity}
                 </Badge>
               </div>
@@ -125,6 +148,8 @@ const DetectionRules = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+DetectionRules.displayName = "DetectionRules";
 
 export { DetectionRules };

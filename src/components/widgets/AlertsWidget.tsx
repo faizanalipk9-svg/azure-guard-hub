@@ -1,13 +1,14 @@
-import { AlertTriangle, Clock, Shield, Skull, Target } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { AlertCircle, AlertTriangle, ShieldAlert, Clock, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { memo, useEffect, useCallback } from "react";
 
-const AlertsWidget = () => {
-  const { data: alerts = [], isLoading, error } = useQuery({
+const AlertsWidget = memo(() => {
+  const { data: alerts = [], isLoading, error, refetch } = useQuery({
     queryKey: ['security-alerts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,13 +22,54 @@ const AlertsWidget = () => {
     },
   });
 
-  const getIconForSeverity = (severity: string) => {
+  // Real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('security-alerts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'security_alerts'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
+  const getIconForSeverity = useCallback((severity: string) => {
     switch (severity) {
-      case "critical": return Skull;
-      case "high": return Target;
-      default: return AlertTriangle;
+      case "critical": return ShieldAlert;
+      case "high": return AlertTriangle;
+      default: return AlertCircle;
     }
-  };
+  }, []);
+
+  const getSeverityColor = useCallback((severity: string) => {
+    switch (severity) {
+      case "critical": return "threat-critical";
+      case "high": return "threat-high";
+      case "medium": return "threat-medium";
+      case "low": return "threat-low";
+      default: return "muted";
+    }
+  }, []);
+
+  const getStatusVariant = useCallback((status: string) => {
+    switch (status) {
+      case "active": return "destructive";
+      case "investigating": return "secondary";
+      case "resolved": return "default";
+      default: return "outline";
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -57,25 +99,6 @@ const AlertsWidget = () => {
     );
   }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "threat-critical";
-      case "high": return "threat-high";
-      case "medium": return "threat-medium";
-      case "low": return "threat-low";
-      default: return "muted";
-    }
-  };
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "active": return "destructive";
-      case "investigating": return "secondary";
-      case "resolved": return "default";
-      default: return "outline";
-    }
-  };
-
   return (
     <Card className="threat-glow">
       <CardHeader>
@@ -103,7 +126,7 @@ const AlertsWidget = () => {
               <div className="flex-1 space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-sm">{alert.title}</h4>
-                  <Badge variant={getStatusVariant(alert.status)} className="text-xs">
+                  <Badge variant={getStatusVariant(alert.status) as any} className="text-xs">
                     {alert.status}
                   </Badge>
                 </div>
@@ -140,6 +163,8 @@ const AlertsWidget = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+AlertsWidget.displayName = "AlertsWidget";
 
 export { AlertsWidget };

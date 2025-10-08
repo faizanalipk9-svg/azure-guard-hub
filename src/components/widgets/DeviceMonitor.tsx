@@ -1,13 +1,14 @@
-import { Monitor, Smartphone, Server, Shield, AlertCircle, CheckCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Monitor, Smartphone, Server, CheckCircle, AlertCircle, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { memo, useEffect, useCallback } from "react";
 
-const DeviceMonitor = () => {
-  const { data: devices = [], isLoading, error } = useQuery({
+const DeviceMonitor = memo(() => {
+  const { data: devices = [], isLoading, error, refetch } = useQuery({
     queryKey: ['monitored-devices'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -20,14 +21,53 @@ const DeviceMonitor = () => {
     },
   });
 
-  const getDeviceIcon = (deviceType: string) => {
+  // Real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('devices-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'monitored_devices'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
+  const getDeviceIcon = useCallback((deviceType: string) => {
     switch (deviceType) {
       case "workstation": return Monitor;
       case "server": return Server;
       case "mobile": return Smartphone;
       default: return Monitor;
     }
-  };
+  }, []);
+
+  const getStatusColor = useCallback((status: string) => {
+    switch (status) {
+      case "protected": return "default";
+      case "alert": return "destructive";
+      case "warning": return "secondary";
+      default: return "outline";
+    }
+  }, []);
+
+  const getStatusIcon = useCallback((status: string) => {
+    switch (status) {
+      case "protected": return CheckCircle;
+      case "alert": return AlertCircle;
+      default: return Shield;
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -57,23 +97,6 @@ const DeviceMonitor = () => {
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "protected": return "default";
-      case "alert": return "destructive";
-      case "warning": return "secondary";
-      default: return "outline";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "protected": return CheckCircle;
-      case "alert": return AlertCircle;
-      default: return Shield;
-    }
-  };
-
   return (
     <Card className="cyber-glow">
       <CardHeader>
@@ -102,7 +125,7 @@ const DeviceMonitor = () => {
               <div className="flex-1 space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-sm">{device.device_name}</h4>
-                  <Badge variant={getStatusColor(device.status)} className="text-xs">
+                  <Badge variant={getStatusColor(device.status) as any} className="text-xs">
                     <StatusIcon className="h-3 w-3 mr-1" />
                     {device.status}
                   </Badge>
@@ -142,6 +165,8 @@ const DeviceMonitor = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+DeviceMonitor.displayName = "DeviceMonitor";
 
 export { DeviceMonitor };

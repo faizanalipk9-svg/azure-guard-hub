@@ -1,17 +1,14 @@
-import { Shield, AlertTriangle, Activity, Users, Server, Eye, Zap, LogOut } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Shield, AlertTriangle, Activity, Server } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertsWidget } from "./widgets/AlertsWidget";
 import { DeviceMonitor } from "./widgets/DeviceMonitor";
 import { ThreatIntelligence } from "./widgets/ThreatIntelligence";
 import { DetectionRules } from "./widgets/DetectionRules";
-import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { memo, useMemo } from "react";
 
-const SecurityDashboard = () => {
-  const { user, signOut } = useAuth();
+const SecurityDashboard = memo(() => {
 
   // Fetch metrics data
   const { data: alertsCount = 0 } = useQuery({
@@ -46,7 +43,7 @@ const SecurityDashboard = () => {
     },
   });
 
-  const metrics = [
+  const metrics = useMemo(() => [
     {
       title: "Active Threats",
       value: alertsCount.toString(),
@@ -79,36 +76,10 @@ const SecurityDashboard = () => {
       color: "cyber-glow",
       trend: "up"
     }
-  ];
+  ], [alertsCount, devicesCount, rulesCount]);
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            CyberGuard Command Center
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Real-time security monitoring and threat detection
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="cyber-glow">
-            <Eye className="h-3 w-3 mr-1" />
-            Real-time Monitoring
-          </Badge>
-          <Badge variant="outline" className="scan-animation">
-            <Zap className="h-3 w-3 mr-1" />
-            Active Scanning
-          </Badge>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="h-3 w-3 mr-1" />
-            Sign Out
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -146,6 +117,8 @@ const SecurityDashboard = () => {
       </div>
     </div>
   );
-};
+});
+
+SecurityDashboard.displayName = "SecurityDashboard";
 
 export default SecurityDashboard;

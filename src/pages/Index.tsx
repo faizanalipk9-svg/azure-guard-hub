@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, AlertTriangle, Server, Eye, FileCode, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -52,6 +53,7 @@ const Index = () => {
                 <Eye className="h-3 w-3 mr-1" />
                 Real-time Monitoring
               </Badge>
+              <ThemeToggle />
               <Button variant="outline" size="sm" onClick={signOut}>
                 <LogOut className="h-3 w-3 mr-1" />
                 Sign Out
