@@ -43,9 +43,9 @@ const Index = () => {
               <Shield className="h-8 w-8 text-primary animate-pulse" />
               <div className="text-center">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                  CyberGuard Command Center
+                  Azure Guard Hub
                 </h1>
-                <p className="text-sm text-muted-foreground">Real-time security monitoring & threat detection</p>
+                <p className="text-sm text-muted-foreground">JCMtool Security Dashboard - Real-time Monitoring & Threat Detection</p>
               </div>
             </div>
             <div className="flex-1 flex items-center justify-end gap-2">
