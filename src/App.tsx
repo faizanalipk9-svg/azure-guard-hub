@@ -15,6 +15,10 @@ const Alerts = lazy(() => import("./pages/Alerts"));
 const Devices = lazy(() => import("./pages/Devices"));
 const Rules = lazy(() => import("./pages/Rules"));
 const ThreatIntel = lazy(() => import("./pages/ThreatIntel"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Settings = lazy(() => import("./pages/Settings"));
+const AuditLogs = lazy(() => import("./pages/AuditLogs"));
+const Reports = lazy(() => import("./pages/Reports"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -46,6 +50,10 @@ const App = () => (
                   <Route path="devices" element={<Devices />} />
                   <Route path="rules" element={<Rules />} />
                   <Route path="threats" element={<ThreatIntel />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="audit" element={<AuditLogs />} />
+                  <Route path="reports" element={<Reports />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

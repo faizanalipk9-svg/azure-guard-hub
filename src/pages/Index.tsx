@@ -2,7 +2,7 @@ import { useEffect, memo } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, AlertTriangle, Server, Eye, FileCode, LogOut } from "lucide-react";
+import { Shield, AlertTriangle, Server, Eye, FileCode, LogOut, User, Settings, FileText, BarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -87,6 +87,22 @@ const Index = () => {
               <TabsTrigger value="threats" className="gap-2">
                 <Eye className="h-4 w-4" />
                 Threat Intel
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="gap-2">
+                <User className="h-4 w-4" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Audit Logs
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="gap-2">
+                <BarChart className="h-4 w-4" />
+                Reports
               </TabsTrigger>
             </TabsList>
           </Tabs>
