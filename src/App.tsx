@@ -21,6 +21,12 @@ const AuditLogs = lazy(() => import("./pages/AuditLogs"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const VulnerabilityScanner = lazy(() => import("./pages/VulnerabilityScanner"));
+const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
+const SecurityTools = lazy(() => import("./pages/SecurityTools"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const SystemHealth = lazy(() => import("./pages/SystemHealth"));
 
 const queryClient = new QueryClient();
 
@@ -54,6 +60,12 @@ const App = () => (
                   <Route path="settings" element={<Settings />} />
                   <Route path="audit" element={<AuditLogs />} />
                   <Route path="reports" element={<Reports />} />
+                  <Route path="vulnerabilities" element={<VulnerabilityScanner />} />
+                  <Route path="network" element={<NetworkMonitor />} />
+                  <Route path="tools" element={<SecurityTools />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="notifications" element={<Notifications />} />
+                  <Route path="health" element={<SystemHealth />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
