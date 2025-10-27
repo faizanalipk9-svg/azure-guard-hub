@@ -16,20 +16,31 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [searchParams] = useSearchParams();
-  const mode = searchParams.get('mode');
-  const { signIn, signUp, resetPassword, updatePassword } = useAuth();
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const { user, signIn, signUp, resetPassword, updatePassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Check for password recovery token in URL hash
   useEffect(() => {
-    if (mode === 'resetPassword') {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    
+    if (type === 'recovery') {
+      setIsPasswordRecovery(true);
       toast({
         title: "Reset Password",
         description: "Please enter your new password below.",
       });
     }
-  }, [mode, toast]);
+  }, [toast]);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user && !isPasswordRecovery) {
+      navigate('/');
+    }
+  }, [user, isPasswordRecovery, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +164,7 @@ const Auth = () => {
     setLoading(false);
   };
 
-  if (mode === 'resetPassword') {
+  if (isPasswordRecovery) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-md space-y-6">
