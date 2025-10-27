@@ -12,6 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { z } from "zod";
+
+const alertSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  description: z.string().trim().min(1, "Description is required").max(1000, "Description must be less than 1000 characters"),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  source: z.string().trim().min(1, "Source is required").max(100, "Source must be less than 100 characters"),
+  target_device: z.string().trim().max(100, "Target device must be less than 100 characters").optional(),
+});
 
 const Alerts = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -48,8 +57,17 @@ const Alerts = () => {
   });
 
   const createAlertMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const { error } = await supabase.from('security_alerts').insert([data]);
+    mutationFn: async (data: {
+      title: string;
+      description: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      source: string;
+      target_device?: string;
+    }) => {
+      const { error } = await supabase.from('security_alerts').insert([{
+        alert_id: `ALT-${Date.now()}`,
+        ...data,
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -101,14 +119,26 @@ const Alerts = () => {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              createAlertMutation.mutate({
-                alert_id: `ALT-${Date.now()}`,
-                title: formData.get('title'),
-                description: formData.get('description'),
-                severity: formData.get('severity'),
-                source: formData.get('source'),
-                target_device: formData.get('target_device'),
-              });
+              
+              const data = {
+                title: formData.get('title') as string,
+                description: formData.get('description') as string,
+                severity: formData.get('severity') as string,
+                source: formData.get('source') as string,
+                target_device: formData.get('target_device') as string || undefined,
+              };
+
+              const result = alertSchema.safeParse(data);
+              if (!result.success) {
+                toast({
+                  title: "Validation Error",
+                  description: result.error.errors[0].message,
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              createAlertMutation.mutate(result.data as any);
               (e.target as HTMLFormElement).reset();
             }} className="space-y-4">
               <div className="space-y-2">

@@ -20,7 +20,7 @@ export type Database = {
           created_at: string | null
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           resource_id: string | null
           resource_type: string
           user_agent: string | null
@@ -31,7 +31,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string | null
           resource_type: string
           user_agent?: string | null
@@ -42,7 +42,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           resource_id?: string | null
           resource_type?: string
           user_agent?: string | null
@@ -102,7 +102,7 @@ export type Database = {
           device_name: string
           device_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           last_seen: string
           mac_address: string | null
           metadata: Json | null
@@ -118,7 +118,7 @@ export type Database = {
           device_name: string
           device_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           last_seen?: string
           mac_address?: string | null
           metadata?: Json | null
@@ -134,7 +134,7 @@ export type Database = {
           device_name?: string
           device_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           last_seen?: string
           mac_address?: string | null
           metadata?: Json | null
@@ -189,7 +189,7 @@ export type Database = {
           resolved_at: string | null
           severity: Database["public"]["Enums"]["alert_severity"]
           source: string
-          source_ip: unknown | null
+          source_ip: unknown
           status: Database["public"]["Enums"]["alert_status"]
           target_device: string | null
           title: string
@@ -205,7 +205,7 @@ export type Database = {
           resolved_at?: string | null
           severity: Database["public"]["Enums"]["alert_severity"]
           source: string
-          source_ip?: unknown | null
+          source_ip?: unknown
           status?: Database["public"]["Enums"]["alert_status"]
           target_device?: string | null
           title: string
@@ -221,7 +221,7 @@ export type Database = {
           resolved_at?: string | null
           severity?: Database["public"]["Enums"]["alert_severity"]
           source?: string
-          source_ip?: unknown | null
+          source_ip?: unknown
           status?: Database["public"]["Enums"]["alert_status"]
           target_device?: string | null
           title?: string
@@ -282,7 +282,6 @@ export type Database = {
           full_name: string | null
           id: string
           last_login: string | null
-          role: string | null
           updated_at: string
           user_id: string
         }
@@ -292,7 +291,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           last_login?: string | null
-          role?: string | null
           updated_at?: string
           user_id: string
         }
@@ -302,7 +300,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           last_login?: string | null
-          role?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -344,10 +341,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       alert_severity: "low" | "medium" | "high" | "critical"

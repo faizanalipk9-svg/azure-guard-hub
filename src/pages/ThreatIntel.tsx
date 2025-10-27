@@ -12,6 +12,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { z } from "zod";
+
+const threatSchema = z.object({
+  indicator: z.string().trim().min(1, "Indicator is required").max(500, "Indicator must be less than 500 characters"),
+  indicator_type: z.enum(['ip', 'domain', 'url', 'hash', 'email']),
+  threat_type: z.enum(['malware', 'phishing', 'suspicious_ip', 'data_exfiltration', 'privilege_escalation', 'lateral_movement']),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  source: z.string().trim().min(1, "Source is required").max(200, "Source must be less than 200 characters"),
+  description: z.string().trim().max(1000, "Description must be less than 1000 characters").optional(),
+  confidence_score: z.number().int().min(0).max(100),
+});
 
 const ThreatIntel = () => {
   const { toast } = useToast();
@@ -30,8 +41,16 @@ const ThreatIntel = () => {
   });
 
   const createThreatMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const { error } = await supabase.from('threat_intelligence').insert([data]);
+    mutationFn: async (data: {
+      indicator: string;
+      indicator_type: string;
+      threat_type: 'malware' | 'phishing' | 'suspicious_ip' | 'data_exfiltration' | 'privilege_escalation' | 'lateral_movement';
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      source: string;
+      description?: string;
+      confidence_score: number;
+    }) => {
+      const { error } = await supabase.from('threat_intelligence').insert([data as any]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -85,15 +104,28 @@ const ThreatIntel = () => {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              createThreatMutation.mutate({
-                indicator: formData.get('indicator'),
-                indicator_type: formData.get('indicator_type'),
-                threat_type: formData.get('threat_type'),
-                severity: formData.get('severity'),
-                source: formData.get('source'),
-                description: formData.get('description'),
+              
+              const data = {
+                indicator: formData.get('indicator') as string,
+                indicator_type: formData.get('indicator_type') as string,
+                threat_type: formData.get('threat_type') as string,
+                severity: formData.get('severity') as string,
+                source: formData.get('source') as string,
+                description: formData.get('description') as string,
                 confidence_score: parseInt(formData.get('confidence_score') as string),
-              });
+              };
+
+              const result = threatSchema.safeParse(data);
+              if (!result.success) {
+                toast({
+                  title: "Validation Error",
+                  description: result.error.errors[0].message,
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              createThreatMutation.mutate(result.data as any);
               (e.target as HTMLFormElement).reset();
             }} className="space-y-4">
               <div className="space-y-2">

@@ -11,6 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { z } from "zod";
+
+const deviceSchema = z.object({
+  device_name: z.string().trim().min(1, "Device name is required").max(100, "Device name must be less than 100 characters"),
+  device_type: z.enum(['workstation', 'server', 'laptop', 'mobile', 'iot']),
+  os_info: z.string().trim().min(1, "OS info is required").max(100, "OS info must be less than 100 characters"),
+  ip_address: z.string().trim().ip({ version: "v4" }).optional().or(z.literal('')),
+  mac_address: z.string().trim().regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/, "Invalid MAC address format").optional().or(z.literal('')),
+});
 
 const Devices = () => {
   const { toast } = useToast();
@@ -29,8 +38,18 @@ const Devices = () => {
   });
 
   const createDeviceMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const { error } = await supabase.from('monitored_devices').insert([data]);
+    mutationFn: async (data: {
+      device_name: string;
+      device_type: string;
+      os_info: string;
+      ip_address?: string;
+      mac_address?: string;
+    }) => {
+      const { error } = await supabase.from('monitored_devices').insert([{
+        ...data,
+        ip_address: data.ip_address || null,
+        mac_address: data.mac_address || null,
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -92,13 +111,26 @@ const Devices = () => {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
-              createDeviceMutation.mutate({
-                device_name: formData.get('device_name'),
-                device_type: formData.get('device_type'),
-                os_info: formData.get('os_info'),
-                ip_address: formData.get('ip_address'),
-                mac_address: formData.get('mac_address'),
-              });
+              
+              const data = {
+                device_name: formData.get('device_name') as string,
+                device_type: formData.get('device_type') as string,
+                os_info: formData.get('os_info') as string,
+                ip_address: formData.get('ip_address') as string,
+                mac_address: formData.get('mac_address') as string,
+              };
+
+              const result = deviceSchema.safeParse(data);
+              if (!result.success) {
+                toast({
+                  title: "Validation Error",
+                  description: result.error.errors[0].message,
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              createDeviceMutation.mutate(result.data as any);
               (e.target as HTMLFormElement).reset();
             }} className="space-y-4">
               <div className="space-y-2">

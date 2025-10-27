@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,9 +10,23 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { User, Mail, Shield, Calendar, Save, Eye, EyeOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { z } from 'zod';
+
+const profileSchema = z.object({
+  full_name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  department: z.string().trim().min(1, "Department is required").max(100, "Department must be less than 100 characters"),
+});
+
+const passwordSchema = z.string()
+  .min(12, "Password must be at least 12 characters")
+  .regex(/[A-Z]/, "Must contain uppercase letter")
+  .regex(/[a-z]/, "Must contain lowercase letter")
+  .regex(/[0-9]/, "Must contain number")
+  .regex(/[^A-Za-z0-9]/, "Must contain special character");
 
 const Profile = () => {
   const { user, updatePassword } = useAuth();
+  const { roles, isLoading: rolesLoading } = useUserRole();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -60,12 +75,24 @@ const Profile = () => {
     setSaving(true);
 
     try {
+      const result = profileSchema.safeParse({ 
+        full_name: fullName, 
+        department: department 
+      });
+
+      if (!result.success) {
+        toast({
+          title: "Validation Error",
+          description: result.error.errors[0].message,
+          variant: "destructive",
+        });
+        setSaving(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('user_profiles')
-        .update({
-          full_name: fullName,
-          department: department,
-        })
+        .update(result.data)
         .eq('user_id', user?.id);
 
       if (error) throw error;
@@ -99,11 +126,12 @@ const Profile = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    const passwordResult = passwordSchema.safeParse(newPassword);
+    if (!passwordResult.success) {
       toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
-        variant: "destructive"
+        title: "Password Validation Error",
+        description: passwordResult.error.errors[0].message,
+        variant: "destructive",
       });
       return;
     }
@@ -131,7 +159,7 @@ const Profile = () => {
     setSaving(false);
   };
 
-  if (loading) {
+  if (loading || rolesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />

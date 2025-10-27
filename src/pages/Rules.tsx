@@ -14,6 +14,15 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { z } from "zod";
+
+const ruleSchema = z.object({
+  rule_name: z.string().trim().min(1, "Rule name is required").max(200, "Rule name must be less than 200 characters"),
+  rule_type: z.enum(['network', 'file', 'process', 'registry', 'user']),
+  description: z.string().trim().max(1000, "Description must be less than 1000 characters").optional(),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  rule_content: z.string().trim().min(1, "Rule content is required").max(10000, "Rule content must be less than 10000 characters"),
+});
 
 const Rules = () => {
   const { toast } = useToast();
@@ -33,10 +42,17 @@ const Rules = () => {
   });
 
   const createRuleMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: {
+      rule_name: string;
+      rule_type: string;
+      description?: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      rule_content: string;
+    }) => {
       const { error } = await supabase.from('detection_rules').insert([{
         ...data,
         created_by: user?.id,
+        enabled: true,
       }]);
       if (error) throw error;
     },
@@ -102,9 +118,19 @@ const Rules = () => {
                 description: formData.get('description') as string,
                 severity: formData.get('severity') as string,
                 rule_content: formData.get('rule_content') as string,
-                enabled: true,
               };
-              createRuleMutation.mutate(data);
+
+              const result = ruleSchema.safeParse(data);
+              if (!result.success) {
+                toast({
+                  title: "Validation Error",
+                  description: result.error.errors[0].message,
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              createRuleMutation.mutate(result.data as any);
               (e.target as HTMLFormElement).reset();
               document.querySelector<HTMLButtonElement>('[data-dialog-close]')?.click();
             }} className="space-y-4">
